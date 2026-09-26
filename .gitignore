@@ -1,0 +1,20 @@
+# Build output
+*.exe
+*.o
+*.out
+a.out
+finance
+
+# Generated reports
+report_*.txt
+
+# Editor / OS
+.vscode/
+*.swp
+Thumbs.db
+.DS_Store
+
+# Claude Code
+.claude/
+CLAUDE.md
+CLAUDE.local.md
