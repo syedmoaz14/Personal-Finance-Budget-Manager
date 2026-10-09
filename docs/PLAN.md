@@ -1,4 +1,4 @@
-# Personal Finance & Budget Manager — Design, Work Split & Weekly Roadmap Production
+# Personal Finance & Budget Manager — Design, Work Split & Weekly Roadmap
 
 **Team (BCS-1C):** Syed Moaz Ali (26K-0630) · Syeda Maryam Fatima (26K-0618)
 
