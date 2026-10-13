@@ -116,16 +116,19 @@ Emergency  [##############------]  70%   35,000 /  50,000
 
 ## 🧠 C Concepts Used
 
-| Concept | Where it's used |
-|---|---|
-| 🔀 **Switch & loops** | Menu-driven interface with nested sub-menus |
-| 📦 **Arrays & 2D arrays** | Budget limits, month × category spending table |
-| 🧩 **Functions & pointers** | Modular code, balances updated by reference |
-| 🔤 **String functions** | Searching by keyword, category names (`strstr`, `strcmp`) |
-| 🔁 **Recursion** | Walking and printing the category tree |
-| 🏗️ **Structures** | Accounts, transactions, dates, categories, goals |
-| 🧠 **Dynamic memory** | Transaction list that grows (`realloc`), 2D spending grid (`double **`) |
-| 💾 **File handling** | Saving/loading all data, exporting monthly reports |
+| Week | Concept | Where it's used |
+|:-:|---|---|
+| 3–5 | 🔀 **Variables, if/else, switch** | Menu-driven interface with nested sub-menus |
+| 7 | 🔁 **Loops & intro pointers** | Menu loop, progress bars, balance updated through a pointer |
+| 8 | 📦 **1D arrays** | Accounts, category names, budget limits |
+| 9 | 🧮 **Nested loops & 2D arrays** | Month × category spending table |
+| 10 | 🧩 **Functions & pointers** | Modular code, balances updated by reference |
+| 12 | 🔤 **Strings, recursion, const/static** | Keyword search (`strstr`, `strcmp`), walking the category tree |
+| 13 | 🏗️ **Structures** | Accounts, transactions, dates, categories, goals |
+| 14 | 🧠 **Dynamic memory** | Growing transaction list (`realloc`), 2D spending grid (`double **`) |
+| 15 | 💾 **File handling** | Saving/loading all data, exporting monthly reports |
+
+*Topics are added strictly in the order the course teaches them. Current progress: **Week 7**.*
 
 ---
 
@@ -139,7 +142,7 @@ git clone https://github.com/syedmoaz14/Personal-Finance-Budget-Manager.git
 cd Personal-Finance-Budget-Manager
 
 # build
-gcc -Wall *.c -o finance
+gcc -Wall src/*.c -o finance
 
 # run
 ./finance        # Linux
@@ -152,8 +155,9 @@ finance.exe      # Windows
 
 | Member | Roll No. | Responsibilities |
 |---|---|---|
-| **Syed Moaz Ali** | 26K-0630 | ⚙️ Core engine: main program, accounts & transactions, category tree, spending grid, recurring payments, search |
-| **Syeda Maryam Fatima** | 26K-0618 | 🎨 Features & interface: menus, input validation, budgets & alerts, savings goals, reports |
+| **Syed Moaz Ali** | 26K-0630 | ⚙️ Core engine: main program, accounts & transactions, category drill-down, spending grid, integration |
+| **Syeda Maryam Fatima** | 26K-0618 | 🎨 Interface & budgets: menus, input validation, budgets & alerts, category names & tree printing |
+| **Varaa** | 26K-0633 | 🧩 Extras: savings goals, search & filter, recurring payments, monthly reports |
 
 ---
 
@@ -164,6 +168,6 @@ finance.exe      # Windows
 
 <div align="center">
 
-Made with ☕ and `printf` by Moaz & Maryam
+Made with ☕ and `printf` by Moaz, Maryam & Varaa
 
 </div>

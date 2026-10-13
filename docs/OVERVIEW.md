@@ -1,5 +1,7 @@
 # Project Overview
 
+> **Note:** this describes the final target. The project is built week by week following the course outline; at Week 7 it is a single `main.c` (loops, pointers, one account, 4 fixed categories). See [PLAN.md](PLAN.md).
+
 **Personal Finance & Budget Manager** is a C console app that records every rupee coming in and going out across your accounts (cash, bank, savings). It sorts spending into categories, warns you when you go over a budget, posts rent and subscriptions automatically, tracks savings goals, and writes monthly reports.
 
 ## 1. Program lifecycle
@@ -7,7 +9,7 @@
 ```mermaid
 flowchart TD
     A([Program start]) --> B[Load data from data/*.txt]
-    B --> C[Auto-post recurring transactions that are due]
+    B --> C[Auto-post recurring transactions that are due (today's date via time.h)]
     C --> D[Build month x category spend grid<br/>show budget alerts]
     D --> E{Main menu}
     E -->|1-8| F[Run selected module]
@@ -23,12 +25,12 @@ flowchart TD
 MAIN MENU
 ├── 1. Accounts ............. [Moaz]    add, view balances + net worth, transfer
 ├── 2. Transactions ......... [Moaz]    add income, add expense, history, delete
-├── 3. Categories ........... [Moaz: tree + drill-down | Maryam: add, print tree]
+├── 3. Categories ........... [Moaz: drill-down | Maryam: add, print tree]
 ├── 4. Budgets .............. [Maryam]  set limits, status, month x category table
-├── 5. Savings Goals ........ [Maryam]  create goal, deposit, progress bars
-├── 6. Search & Filter ...... [Moaz]    by date range, category, amount, keyword
-├── 7. Recurring ............ [Moaz]    add/view/remove, auto-posts on startup
-├── 8. Reports .............. [Maryam]  monthly summary, month vs month, export file
+├── 5. Savings Goals ........ [Varaa]   create goal, deposit, progress bars
+├── 6. Search & Filter ...... [Varaa]   by date range, category, amount, keyword
+├── 7. Recurring ............ [Varaa]   add/view/remove, auto-posts on startup
+├── 8. Reports .............. [Varaa]   monthly summary, month vs month, export file
 └── 0. Save & Exit .......... [shared]
 ```
 Maryam also owns every sub-menu screen (`menus.c`) and input validation (`utils.c`).
@@ -61,7 +63,8 @@ flowchart TD
 **Interface between the two halves:**
 - `int selectCategory(void)` and `double getSpent(int month, int categoryId)`: Moaz provides them
 - `void checkBudget(int month, int categoryId)`: Maryam provides it, Moaz calls it after every expense
-- `void addToGoal(int goalIndex, double amount)`: Maryam provides it, Moaz calls it on tagged deposits
+- `void addToGoal(int goalIndex, double amount)`: Varaa provides it, Moaz calls it on tagged deposits
+- `void postDueRecurring(...)`: Varaa provides it, Moaz calls it at startup; it posts through Moaz's `addTransaction`
 - `readInt`, `readDouble`, `readDate`: Maryam provides them, everyone uses them
 
 ## 4. Data model (final form, week 10+)
@@ -86,9 +89,10 @@ Budget data: `double **spendGrid` (12 months x categories, 2D DMA) and `double *
 
 | File | Owner |
 |---|---|
-| `data/accounts.txt`, `data/transactions.txt`, `data/categories.txt`, `data/recurring.txt` | Moaz |
-| `data/budgets.txt`, `data/goals.txt` | Maryam |
-| `report_YYYY_MM.txt` (generated) | Maryam |
+| `data/accounts.txt`, `data/transactions.txt` | Moaz |
+| `data/budgets.txt`, `data/categories.txt` | Maryam |
+| `data/goals.txt`, `data/recurring.txt` | Varaa |
+| `report_YYYY_MM.txt` (generated) | Varaa |
 
 ## 6. Sample screens
 
