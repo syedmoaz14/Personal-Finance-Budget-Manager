@@ -1,15 +1,13 @@
-
 #include <stdio.h>
 
-#define MAX_GOALS 6
-
-double goalTarget[MAX_GOALS];
-double goalSaved[MAX_GOALS];
+/* at most 5 goals, numbered from 0 (same number as in common.h) */
+double goalTarget[5];
+double goalSaved[5];
 int goalCount = 0;
 
 int createGoal(double target)
 {
-    if (goalCount == MAX_GOALS)
+    if (goalCount >= 5)
     {
         printf("The goals are full\n");
         return -1;

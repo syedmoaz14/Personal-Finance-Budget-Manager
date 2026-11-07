@@ -1,5 +1,3 @@
-
-double monthIncome(int month);
-double monthExpense(int month);
+/* report.c (Varaa). month is 1-12 everywhere. */
 void yearSummary(void);
 void printMonthlyReport(int month);
