@@ -9,14 +9,9 @@
  *   account.c  (Moaz)  monthIncome, monthExpense
  * Month is 1-12 everywhere. There are 5 categories, numbered 0-4.
  *
- * These lines announce those functions until common.h exists;
- * then replace them with: #include "common.h"
+ * common.h announces all of those functions.
  */
-double getSpent(int month, int category);
-double categoryYearTotal(int category);
-const char *categoryName(int category);
-double monthIncome(int month);
-double monthExpense(int month);
+#include "common.h"
 
 void yearSummary(void)
 {
