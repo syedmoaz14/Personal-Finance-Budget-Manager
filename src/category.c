@@ -1,5 +1,5 @@
 #include <stdio.h>
-int readInt(int min,int max);
+#include "common.h"
 
 const char *categoryName(int category){
     switch(category){

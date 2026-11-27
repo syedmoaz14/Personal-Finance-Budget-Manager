@@ -18,3 +18,13 @@ Thumbs.db
 .claude/
 CLAUDE.md
 CLAUDE.local.md
+
+# saved program data and builds
+accounts.txt
+budgets.txt
+goals.txt
+recurring.txt
+*.exe
+
+# web test page data
+tools/webui/data/
