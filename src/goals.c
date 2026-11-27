@@ -1,33 +1,86 @@
+/*
+ * goals.c - savings goals such as "Laptop - 150000".
+ *
+ * Each goal is a struct Goal. The list starts small and doubles with
+ * realloc when it is full, and is freed when the program exits.
+ */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "common.h"
 
-#define MAX_GOALS 6
-
-double goalTarget[MAX_GOALS];
-double goalSaved[MAX_GOALS];
-int goalCount = 0;
-
-int createGoal(double target)
+struct Goal
 {
-    if (goalCount == MAX_GOALS)
+    char name[30];
+    double target;
+    double saved;
+};
+
+struct Goal *goals = NULL;
+int goalCount = 0;
+int goalCapacity = 0;
+
+/* makes room for one more goal; returns 1 if it worked */
+int makeRoom(void)
+{
+    struct Goal *bigger;
+    int newCapacity;
+
+    if (goalCount < goalCapacity)
     {
-        printf("The goals are full\n");
+        return 1;
+    }
+
+    newCapacity = (goalCapacity == 0) ? 4 : goalCapacity * 2;
+    bigger = realloc(goals, newCapacity * sizeof(struct Goal));
+    if (bigger == NULL)
+    {
+        printf("Out of memory.\n");
+        return 0;
+    }
+
+    goals = bigger;
+    goalCapacity = newCapacity;
+    return 1;
+}
+
+/* adds a goal with money already saved (used by createGoal and by the loader) */
+int loadGoal(const char *name, double target, double saved)
+{
+    if (makeRoom() == 0)
+    {
         return -1;
     }
 
+    strncpy(goals[goalCount].name, name, 29);
+    goals[goalCount].name[29] = '\0';
+    goals[goalCount].target = target;
+    goals[goalCount].saved = saved;
+    goalCount++;
+
+    return goalCount - 1;
+}
+
+int createGoal(const char *name, double target)
+{
     if (target <= 0)
     {
         printf("Target is invalid\n");
         return -1;
     }
+    if (name[0] == '\0')
+    {
+        printf("A goal needs a name.\n");
+        return -1;
+    }
 
-    goalTarget[goalCount] = target;
-    goalSaved[goalCount] = 0;
+    if (loadGoal(name, target, 0) < 0)
+    {
+        return -1;
+    }
 
-    goalCount++;
-
-    printf("Goal %d created successfully\n", goalCount);
-
+    printf("Goal \"%s\" created successfully\n", name);
     return goalCount - 1;
 }
 
@@ -45,7 +98,7 @@ void addToGoal(int index, double amount)
         return;
     }
 
-    goalSaved[index] = goalSaved[index] + amount;
+    goals[index].saved = goals[index].saved + amount;
 
     printf("Amount added\n");
 }
@@ -60,7 +113,7 @@ double goalPercent(int index)
         return -1;
     }
 
-    percent = goalSaved[index] / goalTarget[index] * 100;
+    percent = goals[index].saved / goals[index].target * 100;
 
     if (percent > 100)
     {
@@ -89,7 +142,7 @@ void showGoals(void)
         percent = goalPercent(index);
         filled = (int)(percent / 5);
 
-        printf("\nGoal %d\n", index + 1);
+        printf("\n%d. %s\n", index + 1, goals[index].name);
 
         printf("[");
 
@@ -108,7 +161,7 @@ void showGoals(void)
         printf("] %.0f%%\n", percent);
 
         printf("Saved: %.2f, Target: %.2f\n",
-               goalSaved[index], goalTarget[index]);
+               goals[index].saved, goals[index].target);
 
         if (percent >= 100)
         {
@@ -129,11 +182,39 @@ void removeGoal(int index)
 
     for (i = index; i < goalCount - 1; i++)
     {
-        goalTarget[i] = goalTarget[i + 1];
-        goalSaved[i] = goalSaved[i + 1];
+        goals[i] = goals[i + 1];
     }
 
     goalCount--;
 
     printf("Goal removed\n");
+}
+
+int getGoalCount(void)
+{
+    return goalCount;
+}
+
+/* used by storage.c to save the goals */
+const char *getGoalName(int index)
+{
+    return goals[index].name;
+}
+
+double getGoalTarget(int index)
+{
+    return goals[index].target;
+}
+
+double getGoalSaved(int index)
+{
+    return goals[index].saved;
+}
+
+void freeGoals(void)
+{
+    free(goals);
+    goals = NULL;
+    goalCount = 0;
+    goalCapacity = 0;
 }
