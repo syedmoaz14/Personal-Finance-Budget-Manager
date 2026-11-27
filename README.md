@@ -8,9 +8,11 @@ A menu-driven C console app that tracks your money across accounts, catches over
 ![Language](https://img.shields.io/badge/language-C-00599C?style=for-the-badge&logo=c&logoColor=white)
 ![Compiler](https://img.shields.io/badge/compiler-GCC-A42E2B?style=for-the-badge&logo=gnu&logoColor=white)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-0E7C66?style=for-the-badge)
-![Status](https://img.shields.io/badge/status-in%20development-F2A900?style=for-the-badge)
+![Status](https://img.shields.io/badge/status-complete-2E9E5B?style=for-the-badge)
 
 *Programming Fundamentals semester project · BCS-1C · FAST-NUCES Karachi*
+
+**🌐 [Try the web demo](https://personal-finance-budget-manager-web.vercel.app/)** (a JavaScript copy of the app; the graded project is the C program in `src/`)
 
 </div>
 
@@ -39,16 +41,17 @@ One program that manages **all your accounts in one place** and **analyses** you
 | | Feature | What it does |
 |:-:|---|---|
 | 🏦 | **Multiple accounts** | Cash, bank and savings, each with a running balance and a total net worth |
-| 🧾 | **Smart transaction log** | Income and expenses in a list that grows as needed (no fixed limit) |
-| 🌳 | **Category tree** | Categories inside categories, e.g. **Food → Groceries / Dining Out**, browsed level by level |
+| 🧾 | **Smart transaction log** | Income and expenses with a note, in a list that grows as needed (no fixed limit) |
+| 🔀 | **Transfers** | Move money between your own accounts |
+| 🏷️ | **Categories** | Food, Transport, Rent, Utilities and Other |
 | 🎯 | **Monthly budgets** | Set a limit per category and see how much of it is used |
 | 🚨 | **Overspend alerts** | ⚠️ Warning at 80% used · 🔴 Alert once the limit is crossed |
 | 📅 | **Spending grid** | Month × category table showing where your money went all year |
-| 🔁 | **Recurring payments** | Rent and subscriptions added automatically every month |
-| 🐷 | **Savings goals** | Progress bars toward targets like *"Laptop – 150,000"* |
-| 🔍 | **Search & filter** | Find transactions by date range, category, amount or keyword |
-| 📄 | **Monthly reports** | Summary with month-to-month comparison, saved to a text file |
-| 💾 | **Saved automatically** | Everything is written to files, so your data is still there next time |
+| 🔁 | **Recurring payments** | Rent and subscriptions added automatically each month (day 1–28) |
+| 🐷 | **Savings goals** | Named goals with progress toward a target, e.g. *"Laptop – 150,000"* |
+| 🔍 | **Search & filter** | Find transactions by note keyword, category, amount range or month |
+| 📄 | **Reports** | Monthly report and a year summary |
+| 💾 | **Saved automatically** | Accounts, budgets, goals and recurring payments are saved to text files, so your data is still there next time |
 
 ---
 
@@ -70,7 +73,7 @@ flowchart LR
 ```mermaid
 flowchart LR
     A[Pick account] --> B[Enter amount & date]
-    B --> C[Choose category<br/>Food → Groceries]
+    B --> C[Choose category<br/>e.g. Food]
     C --> D[Saved + balance updated]
     D --> E{Budget check}
     E -->|under 80%| F[✅ OK]
@@ -84,8 +87,8 @@ flowchart LR
 
 ```
 =========== PERSONAL FINANCE MANAGER ===========
- [Auto-posted] Rent  -25,000  -> HBL Bank  (01/10/2026)
- [!] Dining Out: 112% of budget used this month
+ [Auto-posted] Rent  -25,000  (01/10/2026)
+ [!] Food: 112% of budget used this month
 ------------------------------------------------
  1. Accounts        5. Savings Goals
  2. Transactions    6. Search & Filter
@@ -99,8 +102,7 @@ Enter choice: _
 BUDGET STATUS - October 2026
 Category      Spent    Limit    Used
 Food          8,500   10,000   [########--]  85%  WARNING
-  Groceries   5,200
-  Dining Out  3,300    3,000   [##########] 110%  OVERSPENT
+Rent         27,500   25,000   [##########] 110%  OVERSPENT
 Transport     2,100    4,000   [#####-----]  52%
 ```
 
@@ -110,7 +112,7 @@ Laptop     [#########-----------]  45%   67,500 / 150,000
 Emergency  [##############------]  70%   35,000 /  50,000
 ```
 
-*(Sample screens show the planned final version.)*
+*(Sample screens, with example numbers.)*
 
 ---
 
@@ -123,12 +125,12 @@ Emergency  [##############------]  70%   35,000 /  50,000
 | 8 | 📦 **1D arrays** | Accounts, category names, budget limits |
 | 9 | 🧮 **Nested loops & 2D arrays** | Month × category spending table |
 | 10 | 🧩 **Functions & pointers** | Modular code, balances updated by reference |
-| 12 | 🔤 **Strings, recursion, const/static** | Keyword search (`strstr`, `strcmp`), walking the category tree |
-| 13 | 🏗️ **Structures** | Accounts, transactions, dates, categories, goals |
-| 14 | 🧠 **Dynamic memory** | Growing transaction list (`realloc`), 2D spending grid (`double **`) |
-| 15 | 💾 **File handling** | Saving/loading all data, exporting monthly reports |
+| 11 | 🔤 **Strings, `const`, `time.h`** | Keyword search (`strstr`, `strcmp`, `tolower`), recurring payments use today's date |
+| 13 | 🏗️ **Structures** | Accounts, transactions, dates, goals, recurring payments |
+| 14 | 🧠 **Dynamic memory** | Growing transaction, goal and recurring lists (`malloc`, `realloc`, `free`) |
+| 15 | 💾 **File handling** | Saving and loading accounts, budgets, goals and recurring payments |
 
-*Topics are added strictly in the order the course teaches them. Current progress: **Week 7**.*
+*Only syntax from the course slides is used, in the order the course teaches it. Progress: **Week 15, all topics covered**.*
 
 ---
 
@@ -142,12 +144,14 @@ git clone https://github.com/syedmoaz14/Personal-Finance-Budget-Manager.git
 cd Personal-Finance-Budget-Manager
 
 # build
-gcc -Wall src/*.c -o finance
+gcc -Wall -Wextra src/*.c -o finance
 
 # run
 ./finance        # Linux
 finance.exe      # Windows
 ```
+
+Your data is saved as `accounts.txt`, `budgets.txt`, `goals.txt` and `recurring.txt` in the folder you run it from.
 
 ---
 
@@ -155,9 +159,9 @@ finance.exe      # Windows
 
 | Member | Roll No. | Responsibilities |
 |---|---|---|
-| **Syed Moaz Ali** | 26K-0630 | ⚙️ Core engine: main program, accounts & transactions, category drill-down, spending grid, integration |
-| **Syeda Maryam Fatima** | 26K-0618 | 🎨 Interface & budgets: menus, input validation, budgets & alerts, category names & tree printing |
-| **Varaa** | 26K-0633 | 🧩 Extras: savings goals, search & filter, recurring payments, monthly reports |
+| **Syed Moaz Ali** | 26K-0630 | ⚙️ Core engine: main program, accounts & transactions, categories, spending grid, saving to files, search, recurring payments, integration |
+| **Syeda Maryam Fatima** | 26K-0618 | 🎨 Interface & budgets: menus, input validation, budgets & alerts |
+| **Varaa** | 26K-0633 | 🧩 Extras: savings goals and reports |
 
 ---
 
