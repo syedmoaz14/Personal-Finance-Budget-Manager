@@ -1,0 +1,13 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build with warnings on
+        run: gcc -Wall -Wextra -Werror src/*.c -o finance
+      - name: Smoke test (start, then exit with 0)
+        run: echo 0 | ./finance | grep Goodbye

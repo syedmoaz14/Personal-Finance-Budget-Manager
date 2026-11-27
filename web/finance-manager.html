@@ -451,4 +451,14 @@ document.addEventListener("change", (e) => {
   // budget alerts for this month, shown once at start-up like the C program
   CATS.forEach((c, i) => { const a = budgetAlert(T.m, i); if (a) toast(a.msg, a.kind); });
 })();
+
+// easter egg: type the Konami code (up up down down left right left right b a)
+(function () {
+  const code = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
+  let at = 0;
+  document.addEventListener("keydown", (e) => {
+    at = (e.key === code[at]) ? at + 1 : (e.key === code[0] ? 1 : 0);
+    if (at === code.length) { at = 0; toast("Secret unlocked: spend less than you earn!"); }
+  });
+})();
 </script>

@@ -49,7 +49,7 @@ int main()
         printf(" 0. Exit\n\n");
         printf("==============================================\n");
         printf("Enter choice: ");
-        choice = readInt(0, 8);
+        choice = readInt(0, 42);   /* 9 to 41 are refused below; 42 is a secret */
 
         switch (choice)
         {
@@ -77,9 +77,15 @@ int main()
         case 8:
             reportsMenu();
             break;
+        case 42:
+            printf("\nThe answer to life, the universe and your budget: spend less than you earn!\n");
+            break;
         case 0:
             saveAllData();
             printf("\nData saved. Goodbye.\n");
+            break;
+        default:
+            printf("Please choose 0 to 8.\n");
             break;
         }
     }

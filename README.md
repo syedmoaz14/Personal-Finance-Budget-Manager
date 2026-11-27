@@ -5,6 +5,7 @@
 **Know where every rupee goes.**
 A menu-driven C console app that tracks your money across accounts, catches overspending before it happens, and turns each month into a clear report.
 
+![Build](https://github.com/syedmoaz14/Personal-Finance-Budget-Manager/actions/workflows/build.yml/badge.svg)
 ![Language](https://img.shields.io/badge/language-C-00599C?style=for-the-badge&logo=c&logoColor=white)
 ![Compiler](https://img.shields.io/badge/compiler-GCC-A42E2B?style=for-the-badge&logo=gnu&logoColor=white)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-0E7C66?style=for-the-badge)
