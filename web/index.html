@@ -1,0 +1,454 @@
+<title>Finance Manager</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: slim left rail of sections, one working column on the right, net worth pinned in the header.
+   Palette: cool paper greys, deep ink, one teal accent; amber and red are reserved for budget status. */
+:root {
+  --bg: #eceff3; --surface: #ffffff; --ink: #14202e; --mute: #566678; --line: #d3dae2;
+  --accent: #0b7a6c; --accent-t: #def1ee; --on-accent: #ffffff;
+  --warn: #9a6a0a; --warn-t: #faefd2; --bad: #b3362c; --bad-t: #fae3e0; --good: #1b7f4b; --good-t: #def2e6;
+  --sans: "IBM Plex Sans", system-ui, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e141b; --surface: #151d27; --ink: #e7edf3; --mute: #9aa8b6; --line: #273342;
+    --accent: #4fd1bd; --accent-t: #12332f; --on-accent: #08201c;
+    --warn: #e5b45a; --warn-t: #3a2f14; --bad: #f18a80; --bad-t: #3c1d1a; --good: #5fd08e; --good-t: #153322;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e141b; --surface: #151d27; --ink: #e7edf3; --mute: #9aa8b6; --line: #273342;
+  --accent: #4fd1bd; --accent-t: #12332f; --on-accent: #08201c;
+  --warn: #e5b45a; --warn-t: #3a2f14; --bad: #f18a80; --bad-t: #3c1d1a; --good: #5fd08e; --good-t: #153322;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 16px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-bottom: 14px; }
+h1 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -.01em; }
+header small { display: block; color: var(--mute); font-size: .82rem; }
+.nw { text-align: right; }
+.nw .lab { font-size: .72rem; text-transform: uppercase; letter-spacing: .09em; color: var(--mute); }
+.nw .val { font: 500 1.7rem/1.1 var(--mono); font-variant-numeric: tabular-nums; }
+.layout { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 18px; align-items: start; }
+nav { display: flex; flex-direction: column; gap: 2px; position: sticky; top: 12px; }
+nav button { text-align: left; background: none; border: 0; color: var(--mute); font: inherit; padding: 8px 12px; border-radius: 7px; cursor: pointer; }
+nav button:hover { background: var(--surface); color: var(--ink); }
+nav button[aria-current="page"] { background: var(--accent-t); color: var(--accent); font-weight: 600; }
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; }
+  nav { flex-direction: row; overflow-x: auto; position: static; gap: 4px; padding-bottom: 4px; }
+  nav button { white-space: nowrap; }
+  .nw { text-align: left; }
+}
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.card + .card { margin-top: 14px; }
+h2 { margin: 0 0 12px; font-size: .78rem; text-transform: uppercase; letter-spacing: .09em; color: var(--mute); font-weight: 600; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.cols > .card + .card { margin-top: 0; }
+form.f { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-items: end; }
+label { display: grid; gap: 4px; font-size: .8rem; color: var(--mute); min-width: 0; }
+input, select, textarea { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; min-width: 0; width: 100%; }
+textarea { font: 12.5px/1.4 var(--mono); min-height: 130px; }
+.btn { font: inherit; font-weight: 500; background: var(--accent); color: var(--on-accent); border: 0; border-radius: 7px; padding: 8px 14px; cursor: pointer; }
+.btn:hover { filter: brightness(1.08); }
+.btn.sec { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.btn.bad { background: var(--bad); color: #fff; }
+.btn.sm { padding: 3px 9px; font-size: .8rem; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.mute { color: var(--mute); }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+th { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--mute); font-weight: 600; white-space: nowrap; }
+td.num, th.num { text-align: right; }
+tr:last-child td { border-bottom: 0; }
+ul.list { list-style: none; margin: 0; padding: 0; }
+ul.list li { display: flex; align-items: baseline; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+ul.list li:last-child { border-bottom: 0; }
+ul.list .grow { flex: 1; min-width: 0; }
+.pill { display: inline-block; font-size: .72rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--accent-t); color: var(--accent); }
+.pill.income { background: var(--good-t); color: var(--good); } .pill.warn { background: var(--warn-t); color: var(--warn); } .pill.bad { background: var(--bad-t); color: var(--bad); }
+.bar { height: 9px; border-radius: 5px; background: var(--line); overflow: hidden; min-width: 80px; }
+.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 5px; }
+.bar.warn > i { background: var(--warn); } .bar.bad > i { background: var(--bad); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.tile .lab { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--mute); }
+.tile .val { font: 500 1.35rem/1.3 var(--mono); font-variant-numeric: tabular-nums; }
+.pos { color: var(--good); } .neg { color: var(--bad); }
+.empty { color: var(--mute); padding: 6px 0; }
+.heat td.z { color: var(--mute); }
+#toasts { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; z-index: 20; width: min(380px, calc(100vw - 32px)); }
+.toast { background: var(--surface); border: 1px solid var(--line); border-left-width: 4px; border-radius: 8px; padding: 10px 12px; box-shadow: 0 6px 20px rgba(0,0,0,.18); font-size: .9rem; }
+.toast.ok { border-left-color: var(--good); } .toast.warn { border-left-color: var(--warn); } .toast.bad { border-left-color: var(--bad); }
+.sample { font-size: .78rem; color: var(--mute); }
+@media (prefers-reduced-motion: no-preference) { .bar > i { transition: width .25s ease; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Finance Manager</h1>
+      <small>JavaScript version of the C console project. Amounts in rupees.</small>
+    </div>
+    <div class="nw"><div class="lab">Net worth</div><div class="val" id="nw"></div></div>
+  </header>
+  <div class="layout">
+    <nav id="nav" aria-label="Sections"></nav>
+    <main id="main"></main>
+  </div>
+</div>
+<div id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+// ================= data and rules (same as the C program) =================
+const CATS = ["Food", "Transport", "Rent", "Utilities", "Other"];
+const KINDS = ["Cash", "Bank", "Savings"];
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const KEY = "finance-manager-js-v1";
+const now = new Date();
+const T = { d: now.getDate(), m: now.getMonth() + 1, y: now.getFullYear() };
+
+function fresh() { return { accounts: [{ kind: 0, balance: 0, txns: [] }], limits: [0, 0, 0, 0, 0], goals: [], recurring: [] }; }
+function ok(o) { return o && Array.isArray(o.accounts) && Array.isArray(o.limits) && o.limits.length === 5 && Array.isArray(o.goals) && Array.isArray(o.recurring); }
+function load() { try { const s = localStorage.getItem(KEY); if (s) { const o = JSON.parse(s); if (ok(o)) return o; } } catch (e) {} return null; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+let S = load() || fresh();
+
+const r2 = (n) => Math.round(n * 100) / 100;
+const rs = (n) => "Rs " + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pad = (n) => String(n).padStart(2, "0");
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const daysIn = (m, y) => [4, 6, 9, 11].includes(m) ? 30 : m === 2 ? ((y % 4 === 0 && y % 100 !== 0) || y % 400 === 0 ? 29 : 28) : 31;
+const todayStr = () => T.y + "-" + pad(T.m) + "-" + pad(T.d);
+
+// the spending grid ignores the year, exactly like the C grid
+const spent = (m, c) => S.accounts.reduce((s, a) => s + a.txns.reduce((t, x) => t + (x.type === 2 && x.m === m && x.cat === c ? x.amount : 0), 0), 0);
+const monthSum = (type, m) => S.accounts.reduce((s, a) => s + a.txns.reduce((t, x) => t + (x.type === type && x.m === m ? x.amount : 0), 0), 0);
+const catYear = (c) => { let t = 0; for (let m = 1; m <= 12; m++) t += spent(m, c); return t; };
+const netWorth = () => S.accounts.reduce((s, a) => s + a.balance, 0);
+const percentUsed = (m, c) => (S.limits[c] > 0 ? (spent(m, c) * 100) / S.limits[c] : -1);
+
+function budgetAlert(m, c) {
+  const p = percentUsed(m, c);
+  if (p < 0) return null;
+  if (p > 100) return { kind: "bad", msg: "OVERSPENT: " + CATS[c] + " is at " + Math.round(p) + "% of its budget." };
+  if (p >= 80) return { kind: "warn", msg: "WARNING: " + CATS[c] + " is at " + Math.round(p) + "% of its budget." };
+  return null;
+}
+
+function addTxn(a, amount, type, d, m, y, cat, note) {
+  const acc = S.accounts[a];
+  if (!acc) return { ok: false, msg: "Invalid account." };
+  if (!(amount > 0)) return { ok: false, msg: "The amount must be above zero." };
+  if (!(y >= 2000 && y <= 2100) || m < 1 || m > 12 || d < 1 || d > daysIn(m, y)) return { ok: false, msg: "Invalid date." };
+  if (type === 2 && amount > acc.balance) return { ok: false, msg: "Not enough balance for this expense." };
+  acc.balance = r2(acc.balance + (type === 1 ? amount : -amount));
+  acc.txns.push({ type, amount: r2(amount), d, m, y, cat: type === 1 ? 4 : cat, note: String(note || "").slice(0, 39) });
+  return { ok: true, alert: type === 2 ? budgetAlert(m, cat) : null };
+}
+
+function deleteTxn(a, i) {
+  const acc = S.accounts[a], t = acc && acc.txns[i];
+  if (!t) return { ok: false, msg: "No such transaction." };
+  if (t.type === 1 && t.amount > acc.balance) return { ok: false, msg: "Cannot delete: the balance no longer covers this income." };
+  acc.balance = r2(acc.balance + (t.type === 1 ? -t.amount : t.amount));
+  acc.txns.splice(i, 1);
+  return { ok: true };
+}
+
+function transfer(from, to, amount) {
+  const A = S.accounts[from], B = S.accounts[to];
+  if (!A || !B) return { ok: false, msg: "Invalid account." };
+  if (from === to) return { ok: false, msg: "Choose two different accounts." };
+  if (!(amount > 0) || amount > A.balance) return { ok: false, msg: "Not enough balance to transfer." };
+  A.balance = r2(A.balance - amount); B.balance = r2(B.balance + amount);
+  return { ok: true };
+}
+
+// posts every due month of every recurring payment, like postDueRecurring() in C
+function postDue() {
+  const posted = [], failed = [];
+  for (const r of S.recurring) {
+    for (let guard = 0; guard < 600; guard++) {
+      let m = r.lastM + 1, y = r.lastY;
+      if (m > 12) { m = 1; y++; }
+      if (y > T.y || (y === T.y && m > T.m)) break;
+      if (y === T.y && m === T.m && T.d < r.day) break;
+      const res = addTxn(r.acc, r.amount, r.type, r.day, m, y, r.cat, r.note);
+      if (!res.ok) { failed.push(r.note + ": " + res.msg); break; }
+      posted.push(r.note + " " + rs(r.amount) + " (" + pad(r.day) + "/" + pad(m) + "/" + y + ")");
+      r.lastM = m; r.lastY = y;
+    }
+  }
+  return { posted, failed };
+}
+
+// ================= screen =================
+const ui = { view: "accounts", acct: 0, month: T.m, q: null, confirmReset: false };
+const VIEWS = [["accounts", "Accounts"], ["transactions", "Transactions"], ["budgets", "Budgets"], ["goals", "Savings goals"],
+  ["recurring", "Recurring"], ["search", "Search"], ["reports", "Reports"], ["data", "Data"]];
+const $ = (id) => document.getElementById(id);
+
+function toast(msg, kind) {
+  const el = document.createElement("div");
+  el.className = "toast " + (kind || "ok");
+  el.textContent = msg;
+  $("toasts").appendChild(el);
+  setTimeout(() => el.remove(), kind === "ok" ? 4000 : 7000);
+}
+
+const acctOptions = (sel) => S.accounts.map((a, i) => '<option value="' + i + '"' + (i === sel ? " selected" : "") + ">" + (i + 1) + ". " + KINDS[a.kind] + " (" + rs(a.balance) + ")</option>").join("");
+const catOptions = (sel, any) => (any ? '<option value="-1"' + (sel === -1 ? " selected" : "") + ">Any</option>" : "") + CATS.map((c, i) => '<option value="' + i + '"' + (i === sel ? " selected" : "") + ">" + c + "</option>").join("");
+const monthOptions = (sel, any) => (any ? '<option value="0"' + (sel === 0 ? " selected" : "") + ">Any</option>" : "") + MON.map((n, i) => '<option value="' + (i + 1) + '"' + (i + 1 === sel ? " selected" : "") + ">" + n + "</option>").join("");
+const field = (label, inner) => "<label>" + label + inner + "</label>";
+const txnRow = (n, t, extra) => "<tr><td class=\"num\">" + n + "</td><td>" + pad(t.d) + "/" + pad(t.m) + "/" + t.y + '</td><td><span class="pill ' + (t.type === 1 ? "income" : "") + '">' + (t.type === 1 ? "Income" : "Expense") + "</span></td><td>" + CATS[t.cat] + '</td><td class="num">' + rs(t.amount) + "</td><td>" + esc(t.note) + "</td>" + (extra || "") + "</tr>";
+
+function barClass(p) { return p > 100 ? "bad" : p >= 80 ? "warn" : ""; }
+
+function viewAccounts() {
+  const list = S.accounts.length
+    ? '<ul class="list">' + S.accounts.map((a, i) => '<li><span class="grow"><strong>' + (i + 1) + ". " + KINDS[a.kind] + '</strong><div class="mute">' + a.txns.length + ' transactions</div></span><span class="num">' + rs(a.balance) + "</span></li>").join("") + "</ul>"
+    : '<div class="empty">No accounts yet.</div>';
+  return '<div class="cols"><div><section class="card"><h2>Your accounts</h2>' + list + "</section></div><div>" +
+    '<section class="card"><h2>Add an account</h2><form class="f" data-act="addAccount">' +
+    field("Kind", '<select name="kind"><option value="0">Cash</option><option value="1">Bank</option><option value="2">Savings</option></select>') +
+    field("Opening balance", '<input name="bal" type="number" min="0" step="0.01" value="0">') +
+    '<button class="btn" type="submit">Add account</button></form><div class="mute" style="margin-top:8px;font-size:.82rem">Up to 5 accounts.</div></section>' +
+    '<section class="card"><h2>Transfer money</h2>' + (S.accounts.length < 2 ? '<div class="empty">You need at least two accounts to transfer.</div>' :
+    '<form class="f" data-act="transfer">' + field("From", '<select name="from">' + acctOptions(0) + "</select>") + field("To", '<select name="to">' + acctOptions(1) + "</select>") +
+    field("Amount", '<input name="amt" type="number" min="0.01" step="0.01" required>') + '<button class="btn" type="submit">Transfer</button></form>') +
+    '<div class="mute" style="margin-top:8px;font-size:.82rem">A transfer moves money only. It is not income or spending.</div></section></div></div>';
+}
+
+function viewTransactions() {
+  if (ui.acct >= S.accounts.length) ui.acct = 0;
+  const a = S.accounts[ui.acct];
+  const rows = a.txns.map((t, i) => txnRow(i + 1, t, '<td><button class="btn sec sm" data-do="delTxn" data-i="' + i + '">Delete</button></td>')).reverse().join("");
+  return '<section class="card"><h2>Add a transaction</h2><form class="f" data-act="addTxn">' +
+    field("Account", '<select name="acct" id="acctSel">' + acctOptions(ui.acct) + "</select>") +
+    field("Type", '<select name="type" id="typeSel"><option value="2">Expense</option><option value="1">Income</option></select>') +
+    field("Amount", '<input name="amt" type="number" min="0.01" step="0.01" required>') +
+    field("Category (expenses)", '<select name="cat" id="catSel">' + catOptions(0) + "</select>") +
+    field("Date", '<input name="date" type="date" min="2000-01-01" max="2100-12-31" value="' + todayStr() + '" required>') +
+    field("Note", '<input name="note" type="text" maxlength="39" placeholder="e.g. Lunch">') +
+    '<button class="btn" type="submit">Add</button></form></section>' +
+    '<section class="card"><div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0">History</h2><label style="display:flex;align-items:center;gap:8px">Account <select id="histAcct" style="width:auto">' + acctOptions(ui.acct) + "</select></label></div>" +
+    (a.txns.length ? '<div class="tbl"><table><thead><tr><th class="num">No</th><th>Date</th><th>Type</th><th>Category</th><th class="num">Amount</th><th>Note</th><th></th></tr></thead><tbody>' + rows + "</tbody></table></div>" : '<div class="empty">No transactions yet.</div>') +
+    '<div class="mute" style="margin-top:8px;font-size:.82rem">Newest first. The number is the position in the account, as in the C program.</div></section>';
+}
+
+function viewBudgets() {
+  const m = ui.month;
+  const rows = CATS.map((c, i) => {
+    const p = percentUsed(m, i), sp = spent(m, i);
+    const status = p < 0 ? '<span class="mute">no limit</span>' : p > 100 ? '<span class="pill bad">OVERSPENT</span>' : p >= 80 ? '<span class="pill warn">WARNING</span>' : '<span class="pill">OK</span>';
+    return "<tr><td><strong>" + c + '</strong></td><td class="num">' + rs(sp) + '</td><td style="width:130px"><input name="l' + i + '" type="number" min="0" step="0.01" value="' + S.limits[i] + '" aria-label="Limit for ' + c + '"></td><td style="min-width:150px">' +
+      (p < 0 ? "" : '<div class="bar ' + barClass(p) + '"><i style="width:' + Math.min(100, p) + '%"></i></div>') + '</td><td class="num">' + (p < 0 ? "" : Math.round(p) + "%") + "</td><td>" + status + "</td></tr>";
+  }).join("");
+  let grid = "";
+  for (let mm = 1; mm <= 12; mm++) {
+    grid += "<tr><td>" + MON[mm - 1] + "</td>" + CATS.map((c, i) => { const v = spent(mm, i); return '<td class="num ' + (v ? "" : "z") + '">' + (v ? v.toFixed(2) : "–") + "</td>"; }).join("") + '<td class="num"><strong>' + (monthSum(2, mm) ? monthSum(2, mm).toFixed(2) : "–") + "</strong></td></tr>";
+  }
+  grid += "<tr><td><strong>Year</strong></td>" + CATS.map((c, i) => '<td class="num"><strong>' + catYear(i).toFixed(2) + "</strong></td>").join("") + '<td class="num"><strong>' + CATS.reduce((s, c, i) => s + catYear(i), 0).toFixed(2) + "</strong></td></tr>";
+  return '<section class="card"><div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0">Monthly limits</h2><label style="display:flex;align-items:center;gap:8px">Month <select id="monthSel" style="width:auto">' + monthOptions(m) + "</select></label></div>" +
+    '<form data-act="saveLimits"><div class="tbl"><table><thead><tr><th>Category</th><th class="num">Spent</th><th>Limit (0 = none)</th><th>Used</th><th class="num">%</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table></div><div class="row" style="margin-top:12px"><button class="btn" type="submit">Save limits</button><span class="mute" style="font-size:.82rem">Warning from 80%, overspent above 100%, checked after every expense.</span></div></form></section>' +
+    '<section class="card"><h2>Spending by month and category (all years together)</h2><div class="tbl heat"><table><thead><tr><th>Month</th>' + CATS.map((c) => '<th class="num">' + c + "</th>").join("") + '<th class="num">Total</th></tr></thead><tbody>' + grid + "</tbody></table></div></section>";
+}
+
+function viewGoals() {
+  const cards = S.goals.length ? S.goals.map((g, i) => {
+    const p = Math.min(100, (g.saved * 100) / g.target);
+    return '<li style="display:block"><div class="row" style="justify-content:space-between"><strong>' + (i + 1) + ". " + esc(g.name) + "</strong><span>" + (p >= 100 ? '<span class="pill income">Complete</span>' : Math.round(p) + "%") + '</span></div><div class="bar" style="margin:8px 0"><i style="width:' + p + '%"></i></div><div class="row" style="justify-content:space-between"><span class="num mute">' + rs(g.saved) + " of " + rs(g.target) + '</span><span class="row"><form class="row" data-act="goalAdd" data-i="' + i + '" style="gap:6px"><input name="amt" type="number" min="0.01" step="0.01" placeholder="Add Rs" style="width:110px" aria-label="Amount to add to ' + esc(g.name) + '" required><button class="btn sm" type="submit">Add</button></form><button class="btn sec sm" data-do="goalDel" data-i="' + i + '">Remove</button></span></div></li>';
+  }).join("") : "";
+  return '<div class="cols"><section class="card"><h2>Your goals</h2>' + (cards ? '<ul class="list">' + cards + "</ul>" : '<div class="empty">No goals yet. Create one on the right.</div>') + "</section>" +
+    '<section class="card"><h2>Create a goal</h2><form class="f" data-act="goalNew">' + field("Name", '<input name="name" maxlength="29" placeholder="e.g. Laptop" required>') + field("Target", '<input name="target" type="number" min="0.01" step="0.01" required>') + '<button class="btn" type="submit">Create goal</button></form></section></div>';
+}
+
+function viewRecurring() {
+  const list = S.recurring.length ? '<ul class="list">' + S.recurring.map((r, i) => '<li><span class="grow"><strong>' + esc(r.note) + '</strong><div class="mute">' + (r.type === 1 ? "Income" : "Expense, " + CATS[r.cat]) + " on day " + r.day + " of each month, account " + (r.acc + 1) + '</div></span><span class="num">' + rs(r.amount) + '</span><button class="btn sec sm" data-do="recDel" data-i="' + i + '">Remove</button></li>').join("") + "</ul>" : '<div class="empty">No recurring payments.</div>';
+  return '<div class="cols"><section class="card"><h2>Recurring payments</h2>' + list + '<div class="row" style="margin-top:12px"><button class="btn sec" data-do="recPost">Post due payments now</button></div><div class="mute" style="margin-top:8px;font-size:.82rem">Due payments also post by themselves when this page opens, once for each missed month.</div></section>' +
+    '<section class="card"><h2>Add a recurring payment</h2><form class="f" data-act="recNew">' +
+    field("Account", '<select name="acct">' + acctOptions(0) + "</select>") + field("Type", '<select name="type"><option value="2">Expense (e.g. rent)</option><option value="1">Income (e.g. salary)</option></select>') +
+    field("Amount", '<input name="amt" type="number" min="0.01" step="0.01" required>') + field("Category", '<select name="cat">' + catOptions(2) + "</select>") +
+    field("Day of month (1-28)", '<input name="day" type="number" min="1" max="28" value="1" required>') + field("Note", '<input name="note" maxlength="39" placeholder="e.g. Rent" required>') +
+    '<button class="btn" type="submit">Save</button></form></section></div>';
+}
+
+function viewSearch() {
+  const q = ui.q || { kw: "", cat: -1, min: 0, max: 0, month: 0 };
+  let out = "";
+  if (ui.q) {
+    const kw = q.kw.toLowerCase(); let n = 0, total = 0, rows = "";
+    S.accounts.forEach((a, ai) => a.txns.forEach((t, i) => {
+      if (q.cat >= 0 && t.cat !== q.cat) return;
+      if (t.amount < q.min) return;
+      if (q.max > 0 && t.amount > q.max) return;
+      if (q.month > 0 && t.m !== q.month) return;
+      if (kw && !t.note.toLowerCase().includes(kw)) return;
+      n++; total += t.amount; rows += txnRow(i + 1, t, "<td>Account " + (ai + 1) + "</td>");
+    }));
+    out = '<section class="card"><h2>Results</h2>' + (n ? '<div class="tbl"><table><thead><tr><th class="num">No</th><th>Date</th><th>Type</th><th>Category</th><th class="num">Amount</th><th>Note</th><th>Account</th></tr></thead><tbody>' + rows + '</tbody></table></div><div style="margin-top:10px"><strong>' + n + " found</strong>, total " + rs(total) + "</div>" : '<div class="empty">No transactions match.</div>') + "</section>";
+  }
+  return '<section class="card"><h2>Search and filter</h2><form class="f" data-act="search">' +
+    field("Word in the note", '<input name="kw" value="' + esc(q.kw) + '" placeholder="any">') + field("Category", '<select name="cat">' + catOptions(q.cat, true) + "</select>") +
+    field("Minimum amount", '<input name="min" type="number" min="0" step="0.01" value="' + q.min + '">') + field("Maximum (0 = none)", '<input name="max" type="number" min="0" step="0.01" value="' + q.max + '">') +
+    field("Month", '<select name="month">' + monthOptions(q.month, true) + "</select>") + '<button class="btn" type="submit">Search</button></form><div class="mute" style="margin-top:8px;font-size:.82rem">A transaction must pass every filter you fill in.</div></section>' + out;
+}
+
+function viewReports() {
+  const m = ui.month, inc = monthSum(1, m), exp = monthSum(2, m), diff = inc - exp;
+  const amounts = CATS.map((c, i) => spent(m, i)), max = Math.max(...amounts, 1);
+  const top = amounts.map((v, i) => [v, i]).filter((x) => x[0] > 0).sort((a, b) => b[0] - a[0]).slice(0, 3);
+  const prev = m === 1 ? null : m - 1;
+  const cmp = prev ? "<tr><td>Income</td><td class=\"num\">" + rs(monthSum(1, prev)) + '</td><td class="num">' + rs(inc) + '</td><td class="num ' + (inc - monthSum(1, prev) >= 0 ? "pos" : "neg") + '">' + (inc - monthSum(1, prev) >= 0 ? "+" : "") + rs(inc - monthSum(1, prev)) + "</td></tr>" +
+    "<tr><td>Expenses</td><td class=\"num\">" + rs(monthSum(2, prev)) + '</td><td class="num">' + rs(exp) + '</td><td class="num ' + (exp - monthSum(2, prev) <= 0 ? "pos" : "neg") + '">' + (exp - monthSum(2, prev) >= 0 ? "+" : "") + rs(exp - monthSum(2, prev)) + "</td></tr>" : "";
+  let yi = 0, ye = 0; for (let k = 1; k <= 12; k++) { yi += monthSum(1, k); ye += monthSum(2, k); }
+  return '<section class="card"><div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="margin:0">Monthly report</h2><label style="display:flex;align-items:center;gap:8px">Month <select id="monthSel" style="width:auto">' + monthOptions(m) + "</select></label></div>" +
+    '<div class="tiles"><div class="tile"><div class="lab">Income</div><div class="val">' + rs(inc) + '</div></div><div class="tile"><div class="lab">Expenses</div><div class="val">' + rs(exp) + '</div></div><div class="tile"><div class="lab">Difference</div><div class="val ' + (diff >= 0 ? "pos" : "neg") + '">' + rs(diff) + "</div></div></div>" +
+    '<h2>Spending by category</h2><ul class="list">' + CATS.map((c, i) => '<li><span style="width:90px">' + c + '</span><span class="grow"><div class="bar"><i style="width:' + (amounts[i] / max) * 100 + '%"></i></div></span><span class="num" style="width:120px">' + rs(amounts[i]) + "</span></li>").join("") + "</ul>" +
+    '<h2 style="margin-top:16px">Top spending</h2>' + (top.length ? "<ol style=\"margin:0;padding-left:20px\">" + top.map((x) => "<li>" + CATS[x[1]] + " <span class=\"num\">" + rs(x[0]) + "</span></li>").join("") + "</ol>" : '<div class="empty">No spending recorded.</div>') +
+    '<h2 style="margin-top:16px">Compared with the previous month</h2>' + (prev ? '<div class="tbl"><table><thead><tr><th></th><th class="num">' + MON[prev - 1] + '</th><th class="num">' + MON[m - 1] + '</th><th class="num">Change</th></tr></thead><tbody>' + cmp + "</tbody></table></div>" : '<div class="empty">No previous month available.</div>') + "</section>" +
+    '<section class="card"><h2>Year summary (all years together)</h2><div class="tiles"><div class="tile"><div class="lab">Total income</div><div class="val">' + rs(yi) + '</div></div><div class="tile"><div class="lab">Total expenses</div><div class="val">' + rs(ye) + "</div></div></div><ul class=\"list\">" + CATS.map((c, i) => "<li><span class=\"grow\">" + c + '</span><span class="num">' + rs(catYear(i)) + "</span></li>").join("") + "</ul></section>";
+}
+
+function viewData() {
+  return '<section class="card"><h2>Backup and restore</h2><p class="mute" style="margin-top:0">Your data is saved in this browser automatically. Copy the text below to keep a backup, or paste a backup and press Load.</p><textarea id="backup" spellcheck="false" aria-label="Backup text">' + esc(JSON.stringify(S, null, 1)) + '</textarea><div class="row" style="margin-top:10px"><button class="btn sec" data-do="copy">Copy</button><button class="btn" data-do="loadText">Load pasted text</button></div></section>' +
+    '<section class="card"><h2>Start over</h2><div class="row"><button class="btn sec" data-do="sample">Load sample data</button><button class="btn ' + (ui.confirmReset ? "bad" : "sec") + '" data-do="reset">' + (ui.confirmReset ? "Click again to erase everything" : "Reset all data") + '</button></div><div class="sample" style="margin-top:8px">Sample data is example data, not yours. It replaces what is here.</div></section>';
+}
+
+const RENDER = { accounts: viewAccounts, transactions: viewTransactions, budgets: viewBudgets, goals: viewGoals, recurring: viewRecurring, search: viewSearch, reports: viewReports, data: viewData };
+function render() {
+  $("nw").textContent = rs(netWorth());
+  $("nav").innerHTML = VIEWS.map((v) => '<button data-view="' + v[0] + '"' + (v[0] === ui.view ? ' aria-current="page"' : "") + ">" + v[1] + "</button>").join("");
+  $("main").innerHTML = RENDER[ui.view]();
+  const ts = $("typeSel");
+  if (ts) ts.onchange = () => { $("catSel").disabled = ts.value === "1"; };
+}
+function commit() { save(); render(); }
+const num = (v) => Number(v);
+
+// ================= actions =================
+const ACT = {
+  addAccount(f) {
+    if (S.accounts.length >= 5) return toast("You cannot have more than 5 accounts.", "bad");
+    const bal = num(f.get("bal"));
+    if (!(bal >= 0)) return toast("Invalid opening balance.", "bad");
+    S.accounts.push({ kind: num(f.get("kind")), balance: r2(bal), txns: [] });
+    toast("Account added."); commit();
+  },
+  transfer(f) {
+    const r = transfer(num(f.get("from")), num(f.get("to")), num(f.get("amt")));
+    if (!r.ok) return toast(r.msg, "bad");
+    toast("Transfer done."); commit();
+  },
+  addTxn(f) {
+    const [y, m, d] = String(f.get("date")).split("-").map(Number);
+    const type = num(f.get("type")), a = num(f.get("acct"));
+    const r = addTxn(a, num(f.get("amt")), type, d, m, y, num(f.get("cat")), f.get("note"));
+    if (!r.ok) return toast(r.msg, "bad");
+    ui.acct = a;
+    toast(type === 1 ? "Income added." : "Expense added.");
+    if (r.alert) toast(r.alert.msg, r.alert.kind);
+    commit();
+  },
+  saveLimits(f) {
+    for (let i = 0; i < 5; i++) { const v = num(f.get("l" + i)); if (!(v >= 0)) return toast("Limits cannot be negative.", "bad"); S.limits[i] = r2(v); }
+    toast("Limits saved."); commit();
+  },
+  goalNew(f) {
+    const name = String(f.get("name")).trim(), target = num(f.get("target"));
+    if (!name) return toast("A goal needs a name.", "bad");
+    if (!(target > 0)) return toast("Target is invalid.", "bad");
+    S.goals.push({ name: name.slice(0, 29), target: r2(target), saved: 0 });
+    toast('Goal "' + name + '" created.'); commit();
+  },
+  goalAdd(f, form) {
+    const amt = num(f.get("amt")), g = S.goals[num(form.dataset.i)];
+    if (!g || !(amt > 0)) return toast("Invalid amount.", "bad");
+    g.saved = r2(g.saved + amt); toast("Amount added."); commit();
+  },
+  recNew(f) {
+    const type = num(f.get("type")), amt = num(f.get("amt")), day = num(f.get("day")), note = String(f.get("note")).trim();
+    if (!(amt > 0) || !(day >= 1 && day <= 28) || !note) return toast("Check the amount, the day (1-28) and the note.", "bad");
+    const lm = T.m === 1 ? 12 : T.m - 1, ly = T.m === 1 ? T.y - 1 : T.y;
+    S.recurring.push({ acc: num(f.get("acct")), amount: r2(amt), type, cat: type === 1 ? 4 : num(f.get("cat")), note: note.slice(0, 39), day, lastM: lm, lastY: ly });
+    toast("Saved. It posts on day " + day + " of every month."); commit();
+  },
+  search(f) {
+    ui.q = { kw: String(f.get("kw")).trim(), cat: num(f.get("cat")), min: num(f.get("min")) || 0, max: num(f.get("max")) || 0, month: num(f.get("month")) };
+    render();
+  }
+};
+
+const DO = {
+  delTxn(i) { const r = deleteTxn(ui.acct, num(i)); if (!r.ok) return toast(r.msg, "bad"); toast("Transaction deleted."); commit(); },
+  goalDel(i) { S.goals.splice(num(i), 1); toast("Goal removed."); commit(); },
+  recDel(i) { S.recurring.splice(num(i), 1); toast("Removed."); commit(); },
+  recPost() { const r = postDue(); if (!r.posted.length && !r.failed.length) toast("Nothing is due."); r.posted.forEach((p) => toast("Auto-posted " + p)); r.failed.forEach((p) => toast(p, "bad")); commit(); },
+  copy() {
+    const t = $("backup"); t.select();
+    (navigator.clipboard ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(() => toast("Copied."), () => toast("Press Ctrl+C to copy the selected text.", "warn"));
+  },
+  loadText() {
+    try { const o = JSON.parse($("backup").value); if (!ok(o)) throw 0; S = o; toast("Loaded."); commit(); }
+    catch (e) { toast("That text is not a valid backup.", "bad"); }
+  },
+  reset() {
+    if (!ui.confirmReset) { ui.confirmReset = true; render(); setTimeout(() => { ui.confirmReset = false; if (ui.view === "data") render(); }, 4000); return; }
+    S = fresh(); ui.confirmReset = false; ui.acct = 0; ui.q = null; toast("All data erased."); commit();
+  },
+  sample() {
+    S = fresh();
+    S.accounts.push({ kind: 1, balance: 0, txns: [] });
+    const pm = T.m === 1 ? 12 : T.m - 1, py = T.m === 1 ? T.y - 1 : T.y;
+    addTxn(1, 2000, 1, 1, pm, py, 4, "Opening deposit");
+    addTxn(1, 1000, 1, 5, pm, py, 4, "Salary");
+    transfer(1, 0, 500);
+    addTxn(0, 80, 2, 6, pm, py, 2, "Rent");
+    addTxn(0, 30, 2, 7, pm, py, 2, "Rent top-up");
+    addTxn(0, 20, 2, 8, pm, py, 0, "Lunch with Ali");
+    S.limits = [0, 0, 100, 0, 0];
+    S.goals.push({ name: "Laptop", target: 200, saved: 50 });
+    ui.month = pm; ui.acct = 0;
+    toast("Sample data loaded (marked as examples).", "warn"); commit();
+  }
+};
+
+document.addEventListener("submit", (e) => {
+  const f = e.target.closest("form[data-act]");
+  if (!f) return;
+  e.preventDefault();
+  ACT[f.dataset.act](new FormData(f), f);
+});
+document.addEventListener("click", (e) => {
+  const v = e.target.closest("[data-view]");
+  if (v) { ui.view = v.dataset.view; ui.confirmReset = false; return render(); }
+  const d = e.target.closest("[data-do]");
+  if (d) DO[d.dataset.do](d.dataset.i);
+});
+document.addEventListener("change", (e) => {
+  if (e.target.id === "histAcct") { ui.acct = num(e.target.value); render(); }
+  if (e.target.id === "monthSel") { ui.month = num(e.target.value); render(); }
+});
+
+// ================= start =================
+(function boot() {
+  const r = postDue();
+  r.posted.forEach((p) => toast("Auto-posted " + p));
+  r.failed.forEach((p) => toast(p, "bad"));
+  save(); render();
+  // budget alerts for this month, shown once at start-up like the C program
+  CATS.forEach((c, i) => { const a = budgetAlert(T.m, i); if (a) toast(a.msg, a.kind); });
+})();
+</script>
